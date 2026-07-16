@@ -1,0 +1,27 @@
+# AETHRA-SEC - Python dependencies
+# Target: Python 3.12+ on Windows 10 / Windows 11
+#
+# Install with:  pip install -r requirements.txt
+
+# ---- GUI ----
+ttkbootstrap>=1.10.1          # Modern themed widgets on top of Tkinter
+matplotlib>=3.8.0             # Charts embedded in the dashboard
+Pillow>=10.2.0               # Image/logo handling for the GUI
+
+# ---- Database ----
+mysql-connector-python>=8.3.0 # Official MySQL driver (pure python, pooling)
+
+# ---- Security ----
+bcrypt>=4.1.2                # Password hashing
+
+# ---- Integrations ----
+python-nmap>=0.7.1           # Nmap wrapper for vulnerability assessment
+pyshark>=0.6                 # Live packet capture (wraps tshark/Wireshark)
+
+# ---- Reporting ----
+reportlab>=4.1.0             # PDF report generation
+openpyxl>=3.1.2              # Excel (.xlsx) export
+
+# ---- Utilities ----
+python-dotenv>=1.0.1         # Load protected credentials from a .env file
+psutil>=5.9.8                # Network interface discovery / system metrics
