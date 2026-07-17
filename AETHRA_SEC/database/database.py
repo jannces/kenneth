@@ -81,21 +81,26 @@ class Database:
                     **self._db_config.connection_kwargs(include_db=True),
                 )
                 self._connected = True
-                LOG.info("database", "connected",
-                         f"Pool '{self._db_config.pool_name}' -> "
-                         f"{self._db_config.host}:{self._db_config.port}/"
-                         f"{self._db_config.database}")
             except Exception as exc:  # noqa: BLE001
                 self._connected = False
                 LOG.exception("database", "connect_failed", exc)
                 return False
 
+        # Create the schema BEFORE emitting any database-backed log entry, so the
+        # ``system_logs`` table exists by the time the logger tries to write to
+        # it.  (Logging "connected" earlier would attempt an INSERT into a table
+        # that does not yet exist on a fresh database.)
         if ensure_schema:
             try:
                 self.initialize_schema()
             except Exception as exc:  # noqa: BLE001
                 LOG.exception("database", "schema_init_failed", exc)
                 return False
+
+        LOG.info("database", "connected",
+                 f"Pool '{self._db_config.pool_name}' -> "
+                 f"{self._db_config.host}:{self._db_config.port}/"
+                 f"{self._db_config.database}")
         return True
 
     def _ensure_database_exists(self) -> None:

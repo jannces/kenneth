@@ -67,6 +67,12 @@ class LoggingEngine:
         self._file_logger = _build_file_logger()
         self._db = None  # set by attach_database
         self._lock = threading.Lock()
+        # Re-entrancy guard: the database layer logs its own errors through this
+        # engine, and this engine writes logs to the database.  Without a guard,
+        # a failing DB write would recurse forever (log -> db.execute fails ->
+        # log -> ...).  This thread-local flag breaks that cycle: while we are
+        # persisting a log to the DB, any nested log call is file-only.
+        self._reentry = threading.local()
 
     # -- database wiring -----------------------------------------------------
     def attach_database(self, database: Any) -> None:
@@ -85,6 +91,11 @@ class LoggingEngine:
         db = self._db
         if db is None:
             return
+        # If we are already inside a DB persist (e.g. the DB layer is logging a
+        # failed query), stay file-only to avoid infinite recursion.
+        if getattr(self._reentry, "active", False):
+            return
+        self._reentry.active = True
         try:
             db.execute(
                 """INSERT INTO system_logs (timestamp, module, action, description, user, severity)
@@ -94,6 +105,8 @@ class LoggingEngine:
             )
         except Exception as exc:  # noqa: BLE001 - logging must never raise
             self._file_logger.error("Failed to persist system log to DB: %s", exc)
+        finally:
+            self._reentry.active = False
 
     # -- convenience wrappers ------------------------------------------------
     def info(self, module: str, action: str, description: str = "", user: str = "system") -> None:
