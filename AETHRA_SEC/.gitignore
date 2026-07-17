@@ -3,6 +3,9 @@
 # Protected credentials
 .env
 
+# First-run setup marker created by run.bat
+.deps_installed
+
 # Python
 __pycache__/
 *.py[cod]
