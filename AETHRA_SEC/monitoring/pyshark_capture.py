@@ -208,6 +208,16 @@ class MonitoringEngine:
             self._running = False
 
     def _run_capture(self) -> None:
+        # PyShark relies on asyncio internally.  Python 3.10+ no longer creates
+        # an implicit event loop for non-main threads, so this background
+        # capture thread must register a fresh event loop before constructing a
+        # pyshark.LiveCapture - otherwise pyshark raises "There is no current
+        # event loop in thread 'aethra-capture'".  A new loop is created for
+        # each attempt so a loop closed during a previous restart is replaced.
+        import asyncio
+
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
         kwargs: Dict[str, Any] = {}
         if self._interface and self._interface != "auto":
             kwargs["interface"] = self._interface
