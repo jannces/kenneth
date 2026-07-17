@@ -1,0 +1,24 @@
+# AETHRA-SEC ignore rules
+
+# Protected credentials
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Runtime output
+reports_output/
+*.log
+logs/*.log
+*.pcap
+
+# OS / IDE
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
